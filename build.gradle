@@ -1,0 +1,54 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.3'
+	id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.six.homework'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '17'
+}
+
+configurations {
+	cucumberRuntime {
+		extendsFrom testImplementation, implementation, runtimeOnly
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	runtimeOnly 'com.h2database:h2'
+
+	// Unit tests
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// E2E tests
+	testImplementation 'io.cucumber:cucumber-java:7.15.0'
+	testImplementation 'io.cucumber:cucumber-spring:7.15.0'
+	testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.15.0'
+	testImplementation 'com.konghq:unirest-java:3.14.5'
+	testImplementation 'org.springframework.boot:spring-boot-starter-json:3.2.3'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+tasks.register('cucumberCli') {
+	javaexec {
+		main = "io.cucumber.core.cli.Main"
+		classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+		args = [
+				'--plugin', 'pretty',
+				'--plugin', 'html:target/cucumber-report.html',
+				'--glue', 'com.six.homework',
+				'src/test/resources']
+	}
+}
